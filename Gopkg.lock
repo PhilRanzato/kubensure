@@ -29,6 +29,14 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:80057945464ffb5b0da1f026beb8df0e8dbd098eaf771a349291bed2cd29a83e"
+  name = "github.com/fsnotify/fsnotify"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "45d7d09e39ef4ac08d493309fa031790c15bfe8a"
+  version = "v1.4.9"
+
+[[projects]]
   digest = "1:7b9d9b866ab20f5d6b9efb59b2c45c55d6f73fbb8e69147e536fc2b3c6e17f96"
   name = "github.com/gogo/protobuf"
   packages = [
@@ -89,6 +97,25 @@
   version = "v1.8.0"
 
 [[projects]]
+  digest = "1:c0d19ab64b32ce9fe5cf4ddceba78d5bc9807f0016db6b1183599da3dcc24d10"
+  name = "github.com/hashicorp/hcl"
+  packages = [
+    ".",
+    "hcl/ast",
+    "hcl/parser",
+    "hcl/printer",
+    "hcl/scanner",
+    "hcl/strconv",
+    "hcl/token",
+    "json/parser",
+    "json/scanner",
+    "json/token",
+  ]
+  pruneopts = "UT"
+  revision = "8cb6e5b959231cc1119e43259c4a608f9c51a241"
+  version = "v1.0.0"
+
+[[projects]]
   digest = "1:3e260afa138eab6492b531a3b3d10ab4cb70512d423faa78b8949dec76e66a21"
   name = "github.com/imdario/mergo"
   packages = ["."]
@@ -97,12 +124,44 @@
   version = "v0.3.5"
 
 [[projects]]
+  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
   digest = "1:beb5b4f42a25056f0aa291b5eadd21e2f2903a05d15dfe7caf7eaee7e12fa972"
   name = "github.com/json-iterator/go"
   packages = ["."]
   pruneopts = "UT"
   revision = "03217c3e97663914aec3faafde50d081f197a0a2"
   version = "v1.1.8"
+
+[[projects]]
+  digest = "1:85a45ff41e6b733d430b653236191d131b707a05e9751f53b469f2c0bb222f01"
+  name = "github.com/magiconair/properties"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0e5c09062c2daef666bd279e2d2d9f25f218f2be"
+  version = "v1.8.4"
+
+[[projects]]
+  digest = "1:5d231480e1c64a726869bc4142d270184c419749d34f167646baa21008eb0a79"
+  name = "github.com/mitchellh/go-homedir"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "af06845cf3004701891bf4fdb884bfe4920b3727"
+  version = "v1.1.0"
+
+[[projects]]
+  digest = "1:4bba0efb9a537243bc62a0f816d75a068ea45816824e36706e20fb507b986a9c"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "95075d6e1a88d608e5258a054d7f0de9401f255e"
+  version = "v1.4.0"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -121,12 +180,76 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:ba7c8395a3bdd3b44d40ba36ff6eb283b583a3db865c02a952b89a1aa639081b"
+  name = "github.com/pelletier/go-toml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "65ca8064882c8c308e5c804c5d5443d409e0738c"
+  version = "v1.8.1"
+
+[[projects]]
+  digest = "1:e76b197a689daae40d3b3597319b3b66e29c94eccda6461b1c97e2524cf3630b"
+  name = "github.com/spf13/afero"
+  packages = [
+    ".",
+    "mem",
+  ]
+  pruneopts = "UT"
+  revision = "32b5faae5bd7fe285255e818818f7971e9279c1a"
+  version = "v1.5.1"
+
+[[projects]]
+  digest = "1:ff4cd55a3666b6ea3a876c9e133bfb54d6c812e725409a773f2c94a0b3a92f4f"
+  name = "github.com/spf13/cast"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "1ffadf551085444af981432dd0f6d1160c11ec64"
+  version = "v1.3.1"
+
+[[projects]]
+  digest = "1:64d8764e89edc99896736f8de82afccb52b9d5f2b0ca86561c4253d474c0477b"
+  name = "github.com/spf13/cobra"
+  packages = [
+    ".",
+    "cobra",
+    "cobra/cmd",
+    "cobra/tpl",
+  ]
+  pruneopts = "UT"
+  revision = "86f8bfd7fef868a174e1b606783bd7f5c82ddf8f"
+  version = "v1.1.1"
+
+[[projects]]
+  digest = "1:1b753ec16506f5864d26a28b43703c58831255059644351bbcb019b843950900"
+  name = "github.com/spf13/jwalterweatherman"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "94f6ae3ed3bceceafa716478c5fbf8d29ca601a1"
+  version = "v1.1.0"
+
+[[projects]]
   digest = "1:9424f440bba8f7508b69414634aef3b2b3a877e522d8a4624692412805407bb7"
   name = "github.com/spf13/pflag"
   packages = ["."]
   pruneopts = "UT"
   revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
   version = "v1.0.1"
+
+[[projects]]
+  digest = "1:b3027d4cb73b6576e8818c1012389dbcd8385e34bb8e4ee024891214c4338725"
+  name = "github.com/spf13/viper"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3826be313591f83193f048520482a7b3cf17d506"
+  version = "v1.7.1"
+
+[[projects]]
+  digest = "1:f4b32291cad5efac2bfdba89ccde6aa04618b62ce06c1a571da2dc4f3f2677fb"
+  name = "github.com/subosito/gotenv"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "2ef7124db659d49edac6aa459693a15ae36c671a"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
@@ -266,6 +389,14 @@
   pruneopts = "UT"
   revision = "d2d2541c53f18d2a059457998ce2876cc8e67cbf"
   version = "v0.9.1"
+
+[[projects]]
+  digest = "1:f7059e57af5fc848220ebfbfb61e4d333179a6a07e70bc01f7ae5bc873586537"
+  name = "gopkg.in/ini.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "5e97220809ffaa826f787728501264e9114cb834"
+  version = "v1.62.0"
 
 [[projects]]
   digest = "1:5054a1f394226de9e6ddc47b0ba77e35092a4112f4a1cd9cb94aba1f5bdc3ec6"
@@ -467,6 +598,7 @@
   input-imports = [
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
+    "github.com/spf13/cobra/cobra",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/api/rbac/v1",
