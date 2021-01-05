@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/PhilRanzato/kubensure/api/api"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -15,11 +16,11 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func newRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/api/hello", handler).Methods("GET")
-	r.HandleFunc("/api/pods", podHandler).Methods("GET", "OPTIONS")
-	r.HandleFunc("/api/services", serviceHandler).Methods("GET", "OPTIONS")
-	r.HandleFunc("/api/pod-exec", podExecHandler).Methods("POST")
-	r.HandleFunc("/api/test-connection", TestConnection).Methods("POST")
-	r.HandleFunc("/api/pvc", pvcHandler).Methods("GET")
+	r.HandleFunc("/api/pods", api.PodHandler).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/services", api.ServiceHandler).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/pod-exec", api.PodExecHandler).Methods("POST")
+	r.HandleFunc("/api/test-connection", api.TestConnection).Methods("POST")
+	r.HandleFunc("/api/pvc", api.PvcHandler).Methods("GET")
 	return r
 }
 

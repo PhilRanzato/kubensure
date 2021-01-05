@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ import (
 )
 
 // Getter
-func getConfig() *rest.Config {
+func GetConfig() *rest.Config {
 	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
@@ -31,8 +31,8 @@ func getConfig() *rest.Config {
 	return config
 }
 
-func getClientSet() *kubernetes.Clientset {
-	var config = getConfig()
+func GetClientSet() *kubernetes.Clientset {
+	var config = GetConfig()
 
 	// Create a rest client not targeting specific API version
 	clientset, err := kubernetes.NewForConfig(config)
@@ -42,7 +42,8 @@ func getClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-func getPods(clientset *kubernetes.Clientset) []v1.Pod {
+// GetPods : accepts a clientset and returns a list of pods
+func GetPods(clientset *kubernetes.Clientset) []v1.Pod {
 	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get pods:", err)
@@ -50,7 +51,7 @@ func getPods(clientset *kubernetes.Clientset) []v1.Pod {
 	return pods.Items
 }
 
-func getDeployments(clientset *kubernetes.Clientset) []appv1.Deployment {
+func GetDeployments(clientset *kubernetes.Clientset) []appv1.Deployment {
 	deploys, err := clientset.AppsV1().Deployments("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get pods:", err)
@@ -58,7 +59,7 @@ func getDeployments(clientset *kubernetes.Clientset) []appv1.Deployment {
 	return deploys.Items
 }
 
-func getDaemonSets(clientset *kubernetes.Clientset) []appv1.DaemonSet {
+func GetDaemonSets(clientset *kubernetes.Clientset) []appv1.DaemonSet {
 	ds, err := clientset.AppsV1().DaemonSets("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get pods:", err)
@@ -66,7 +67,7 @@ func getDaemonSets(clientset *kubernetes.Clientset) []appv1.DaemonSet {
 	return ds.Items
 }
 
-func getReplicaSets(clientset *kubernetes.Clientset) []appv1.ReplicaSet {
+func GetReplicaSets(clientset *kubernetes.Clientset) []appv1.ReplicaSet {
 	rs, err := clientset.AppsV1().ReplicaSets("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get pods:", err)
@@ -74,7 +75,7 @@ func getReplicaSets(clientset *kubernetes.Clientset) []appv1.ReplicaSet {
 	return rs.Items
 }
 
-func getStatefulSets(clientset *kubernetes.Clientset) []appv1.StatefulSet {
+func GetStatefulSets(clientset *kubernetes.Clientset) []appv1.StatefulSet {
 	sts, err := clientset.AppsV1().StatefulSets("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get pods:", err)
@@ -82,7 +83,7 @@ func getStatefulSets(clientset *kubernetes.Clientset) []appv1.StatefulSet {
 	return sts.Items
 }
 
-func getServices(clientset *kubernetes.Clientset) []v1.Service {
+func GetServices(clientset *kubernetes.Clientset) []v1.Service {
 	svcs, err := clientset.CoreV1().Services("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -90,7 +91,7 @@ func getServices(clientset *kubernetes.Clientset) []v1.Service {
 	return svcs.Items
 }
 
-func getSecrets(clientset *kubernetes.Clientset) []v1.Secret {
+func GetSecrets(clientset *kubernetes.Clientset) []v1.Secret {
 	scr, err := clientset.CoreV1().Secrets("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -98,7 +99,7 @@ func getSecrets(clientset *kubernetes.Clientset) []v1.Secret {
 	return scr.Items
 }
 
-func getConfigMaps(clientset *kubernetes.Clientset) []v1.ConfigMap {
+func GetConfigMaps(clientset *kubernetes.Clientset) []v1.ConfigMap {
 	cm, err := clientset.CoreV1().ConfigMaps("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -106,7 +107,7 @@ func getConfigMaps(clientset *kubernetes.Clientset) []v1.ConfigMap {
 	return cm.Items
 }
 
-func getServiceAccounts(clientset *kubernetes.Clientset) []v1.ServiceAccount {
+func GetServiceAccounts(clientset *kubernetes.Clientset) []v1.ServiceAccount {
 	sa, err := clientset.CoreV1().ServiceAccounts("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -114,7 +115,7 @@ func getServiceAccounts(clientset *kubernetes.Clientset) []v1.ServiceAccount {
 	return sa.Items
 }
 
-func getEvents(clientset *kubernetes.Clientset) []v1.Event {
+func GetEvents(clientset *kubernetes.Clientset) []v1.Event {
 	ev, err := clientset.CoreV1().Events("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -122,7 +123,7 @@ func getEvents(clientset *kubernetes.Clientset) []v1.Event {
 	return ev.Items
 }
 
-func getEndpoints(clientset *kubernetes.Clientset) []v1.Endpoints {
+func GetEndpoints(clientset *kubernetes.Clientset) []v1.Endpoints {
 	ep, err := clientset.CoreV1().Endpoints("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -130,7 +131,7 @@ func getEndpoints(clientset *kubernetes.Clientset) []v1.Endpoints {
 	return ep.Items
 }
 
-func getPersistentVolumes(clientset *kubernetes.Clientset) []v1.PersistentVolume {
+func GetPersistentVolumes(clientset *kubernetes.Clientset) []v1.PersistentVolume {
 	pvs, err := clientset.CoreV1().PersistentVolumes().List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -138,7 +139,7 @@ func getPersistentVolumes(clientset *kubernetes.Clientset) []v1.PersistentVolume
 	return pvs.Items
 }
 
-func getPersistentVolumeClaims(clientset *kubernetes.Clientset) []v1.PersistentVolumeClaim {
+func GetPersistentVolumeClaims(clientset *kubernetes.Clientset) []v1.PersistentVolumeClaim {
 	pvcs, err := clientset.CoreV1().PersistentVolumeClaims("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -146,7 +147,7 @@ func getPersistentVolumeClaims(clientset *kubernetes.Clientset) []v1.PersistentV
 	return pvcs.Items
 }
 
-func getRoles(clientset *kubernetes.Clientset) []rbacv1.Role {
+func GetRoles(clientset *kubernetes.Clientset) []rbacv1.Role {
 	roles, err := clientset.RbacV1().Roles("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -154,7 +155,7 @@ func getRoles(clientset *kubernetes.Clientset) []rbacv1.Role {
 	return roles.Items
 }
 
-func getRoleBindings(clientset *kubernetes.Clientset) []rbacv1.RoleBinding {
+func GetRoleBindings(clientset *kubernetes.Clientset) []rbacv1.RoleBinding {
 	rb, err := clientset.RbacV1().RoleBindings("").List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -162,7 +163,7 @@ func getRoleBindings(clientset *kubernetes.Clientset) []rbacv1.RoleBinding {
 	return rb.Items
 }
 
-func getClusterRoles(clientset *kubernetes.Clientset) []rbacv1.ClusterRole {
+func GetClusterRoles(clientset *kubernetes.Clientset) []rbacv1.ClusterRole {
 	cr, err := clientset.RbacV1().ClusterRoles().List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -170,7 +171,7 @@ func getClusterRoles(clientset *kubernetes.Clientset) []rbacv1.ClusterRole {
 	return cr.Items
 }
 
-func getClusterRoleBindings(clientset *kubernetes.Clientset) []rbacv1.ClusterRoleBinding {
+func GetClusterRoleBindings(clientset *kubernetes.Clientset) []rbacv1.ClusterRoleBinding {
 	crb, err := clientset.RbacV1().ClusterRoleBindings().List(metav1.ListOptions{})
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -178,7 +179,7 @@ func getClusterRoleBindings(clientset *kubernetes.Clientset) []rbacv1.ClusterRol
 	return crb.Items
 }
 
-func getServerVersion(clientset *kubernetes.Clientset) string {
+func GetServerVersion(clientset *kubernetes.Clientset) string {
 	version, err := clientset.ServerVersion()
 	if err != nil {
 		log.Fatalln("failed to get services:", err)
@@ -188,7 +189,7 @@ func getServerVersion(clientset *kubernetes.Clientset) string {
 
 // Exec
 
-func execIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, stdin io.Reader) (string, string, error) {
+func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, stdin io.Reader) (string, string, error) {
 	req := clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(pod.Name).
@@ -208,7 +209,7 @@ func execIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, s
 		TTY:     false,
 	}, parameterCodec)
 
-	exec, err := remotecommand.NewSPDYExecutor(getConfig(), "POST", req.URL())
+	exec, err := remotecommand.NewSPDYExecutor(GetConfig(), "POST", req.URL())
 	if err != nil {
 		return "", "", fmt.Errorf("error while creating Executor: %v", err)
 	}
@@ -228,14 +229,14 @@ func execIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, s
 
 }
 
-func testConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
+func TestConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
 
-	clientset := getClientSet()
+	clientset := GetClientSet()
 
 	// execute command
 	var result bool
 	command := "wget --spider --timeout=1 " + svc.Name + "." + svc.Namespace
-	output, stderr, err := execIntoPod(clientset, &pod, command, nil)
+	output, stderr, err := ExecIntoPod(clientset, &pod, command, nil)
 	if len(stderr) != 0 {
 		fmt.Println("STDERR:", stderr)
 		result = false
@@ -254,25 +255,25 @@ func testConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
 }
 
 // func main() {
-// 	var cs = getClientSet()
-// 	var p = getPods(cs)
-// 	var d = getDeployments(cs)
-// 	var rs = getReplicaSets(cs)
-// 	var ds = getDaemonSets(cs)
-// 	var sts = getStatefulSets(cs)
-// 	var s = getServices(cs)
-// 	var scr = getSecrets(cs)
-// 	var cm = getConfigMaps(cs)
-// 	var sa = getServiceAccounts(cs)
-// 	var ev = getEvents(cs)
-// 	var ep = getEndpoints(cs)
-// 	var pv = getPersistentVolumes(cs)
-// 	var pvc = getPersistentVolumeClaims(cs)
-// 	var r = getRoles(cs)
-// 	var rb = getRoleBindings(cs)
-// 	var cr = getClusterRoles(cs)
-// 	var crb = getClusterRoleBindings(cs)
-// 	var version = getServerVersion(cs)
+// 	var cs = GetClientSet()
+// 	var p = GetPods(cs)
+// 	var d = GetDeployments(cs)
+// 	var rs = GetReplicaSets(cs)
+// 	var ds = GetDaemonSets(cs)
+// 	var sts = GetStatefulSets(cs)
+// 	var s = GetServices(cs)
+// 	var scr = GetSecrets(cs)
+// 	var cm = GetConfigMaps(cs)
+// 	var sa = GetServiceAccounts(cs)
+// 	var ev = GetEvents(cs)
+// 	var ep = GetEndpoints(cs)
+// 	var pv = GetPersistentVolumes(cs)
+// 	var pvc = GetPersistentVolumeClaims(cs)
+// 	var r = GetRoles(cs)
+// 	var rb = GetRoleBindings(cs)
+// 	var cr = GetClusterRoles(cs)
+// 	var crb = GetClusterRoleBindings(cs)
+// 	var version = GetServerVersion(cs)
 
 // 	if len(p) > 0 {
 // 		fmt.Println("pod: " + p[0].Name)
