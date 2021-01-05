@@ -1,0 +1,29 @@
+name: Go
+
+on:
+  push:
+    branches:
+    - feature-GH5-CICD
+  pull_request:
+    branches: 
+    - master
+    - develop
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+
+    - name: Build Cli
+      run: cd cli && go build -v ./...
+
+    - name: Build API
+      run: cd ../api && go build -v ./...
+
