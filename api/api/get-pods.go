@@ -1,10 +1,11 @@
-package main
+package api
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	backend "github.com/PhilRanzato/kubensure/backend"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -12,8 +13,8 @@ type PageVariables struct {
 	Pods []v1.Pod
 }
 
-func podHandler(w http.ResponseWriter, r *http.Request) {
-	cs := getClientSet()
+func PodHandler(w http.ResponseWriter, r *http.Request) {
+	cs := backend.GetClientSet()
 
 	// podVars := PageVariables{
 	// 	Pods: getPods(cs),
@@ -28,7 +29,7 @@ func podHandler(w http.ResponseWriter, r *http.Request) {
 	// 	log.Print("template executing error: ", err) //log it
 	// }
 	fmt.Println("Get pods")
-	pods, _ := json.Marshal(getPods(cs))
+	pods, _ := json.Marshal(backend.GetPods(cs))
 
 	json.NewEncoder(w).Encode(string(pods))
 

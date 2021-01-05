@@ -1,10 +1,11 @@
-package main
+package api
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	backend "github.com/PhilRanzato/kubensure/backend"
 	v1 "k8s.io/api/core/v1"
 )
 
@@ -28,7 +29,7 @@ type ExecResult struct {
 	Error         bool
 }
 
-func podExecHandler(w http.ResponseWriter, r *http.Request) {
+func PodExecHandler(w http.ResponseWriter, r *http.Request) {
 	var exec ExecCommand
 	err := json.NewDecoder(r.Body).Decode(&exec)
 	if err != nil {
@@ -36,8 +37,8 @@ func podExecHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error())
 	}
 
-	clientset := getClientSet()
-	pods := getPods(clientset)
+	clientset := backend.GetClientSet()
+	pods := backend.GetPods(clientset)
 
 	// Search for pod and service to test connection on
 	var pod v1.Pod
@@ -48,7 +49,7 @@ func podExecHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	stdout, stderr, _ := execIntoPod(clientset, &pod, exec.Command, nil)
+	stdout, stderr, _ := backend.ExecIntoPod(clientset, &pod, exec.Command, nil)
 
 	var output ExecResult
 
@@ -77,9 +78,9 @@ func TestConnection(w http.ResponseWriter, r *http.Request) {
 		// return
 	}
 
-	clientset := getClientSet()
-	pods := getPods(clientset)
-	svcs := getServices(clientset)
+	clientset := backend.GetClientSet()
+	pods := backend.GetPods(clientset)
+	svcs := backend.GetServices(clientset)
 
 	// Search for pod and service to test connection on
 	var podFrom v1.Pod
@@ -95,7 +96,7 @@ func TestConnection(w http.ResponseWriter, r *http.Request) {
 			serviceTo = svc
 		}
 	}
-	result = testConnectionPodToService(podFrom, serviceTo)
+	result = backend.TestConnectionPodToService(podFrom, serviceTo)
 	connResult, _ := json.Marshal(result)
 
 	json.NewEncoder(w).Encode(string(connResult))

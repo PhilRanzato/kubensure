@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"html/template"
@@ -23,7 +23,7 @@ type PageVars struct {
 	Pvcs []Pvc
 }
 
-func pvcHandler(w http.ResponseWriter, r *http.Request) {
+func PvcHandler(w http.ResponseWriter, r *http.Request) {
 
 	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	log.Println("Using kubeconfig file: ", kubeconfig)
