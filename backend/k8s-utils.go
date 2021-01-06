@@ -20,7 +20,48 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-// Getter
+type networkExecutable struct {
+	command, args string
+}
+
+var networkExecutables = []networkExecutable{
+	networkExecutable{
+		command: "wget",
+		args:    "--spider --timeout=1",
+	},
+	networkExecutable{
+		command: "nslookup",
+		args:    "",
+	},
+	networkExecutable{
+		command: "curl",
+		args:    "-O",
+	},
+	networkExecutable{
+		command: "nc",
+		args:    "-O",
+	},
+	networkExecutable{
+		command: "telnet",
+		args:    "",
+	},
+	networkExecutable{
+		command: "nmap",
+		args:    "-p",
+	},
+	networkExecutable{
+		command: "ping",
+		args:    "",
+	},
+	networkExecutable{
+		command: "dig",
+		args:    "",
+	},
+}
+
+// Getters
+
+// GetConfig : Get kubeconfig from file
 func GetConfig() *rest.Config {
 	kubeconfig := filepath.Join(os.Getenv("HOME"), ".kube", "config")
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
@@ -31,6 +72,7 @@ func GetConfig() *rest.Config {
 	return config
 }
 
+// GetClientSet : get client set from the kubeconfig file
 func GetClientSet() *kubernetes.Clientset {
 	var config = GetConfig()
 
@@ -42,153 +84,172 @@ func GetClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
-// GetPods : accepts a clientset and returns a list of pods
+// GetPods : accepts a clientset and returns a list of Pods
 func GetPods(clientset *kubernetes.Clientset) []v1.Pod {
 	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get pods:", err)
+		log.Fatalln("Failed to get Pods:", err)
 	}
 	return pods.Items
 }
 
+// GetDeployments : accepts a clientset and returns a list of Deployments
 func GetDeployments(clientset *kubernetes.Clientset) []appv1.Deployment {
 	deploys, err := clientset.AppsV1().Deployments("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get pods:", err)
+		log.Fatalln("Failed to get Deployments:", err)
 	}
 	return deploys.Items
 }
 
+// GetDaemonSets : accepts a clientset and returns a list of DaemonSets
 func GetDaemonSets(clientset *kubernetes.Clientset) []appv1.DaemonSet {
 	ds, err := clientset.AppsV1().DaemonSets("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get pods:", err)
+		log.Fatalln("Failed to get DaemonSets:", err)
 	}
 	return ds.Items
 }
 
+// GetReplicaSets : accepts a clientset and returns a list of ReplicaSets
 func GetReplicaSets(clientset *kubernetes.Clientset) []appv1.ReplicaSet {
 	rs, err := clientset.AppsV1().ReplicaSets("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get pods:", err)
+		log.Fatalln("Failed to get ReplicaSets:", err)
 	}
 	return rs.Items
 }
 
+// GetStatefulSets : accepts a clientset and returns a list of StatefulSets
 func GetStatefulSets(clientset *kubernetes.Clientset) []appv1.StatefulSet {
 	sts, err := clientset.AppsV1().StatefulSets("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get pods:", err)
+		log.Fatalln("Failed to get StatefulSets:", err)
 	}
 	return sts.Items
 }
 
+// GetServices : accepts a clientset and returns a list of Services
 func GetServices(clientset *kubernetes.Clientset) []v1.Service {
 	svcs, err := clientset.CoreV1().Services("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get Services:", err)
 	}
 	return svcs.Items
 }
 
+// GetSecrets : accepts a clientset and returns a list of Secrets
 func GetSecrets(clientset *kubernetes.Clientset) []v1.Secret {
 	scr, err := clientset.CoreV1().Secrets("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get Secrets:", err)
 	}
 	return scr.Items
 }
 
+// GetConfigMaps : accepts a clientset and returns a list of ConfigMaps
 func GetConfigMaps(clientset *kubernetes.Clientset) []v1.ConfigMap {
 	cm, err := clientset.CoreV1().ConfigMaps("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get ConfigMaps:", err)
 	}
 	return cm.Items
 }
 
+// GetServiceAccounts : accepts a clientset and returns a list of ServiceAccounts
 func GetServiceAccounts(clientset *kubernetes.Clientset) []v1.ServiceAccount {
 	sa, err := clientset.CoreV1().ServiceAccounts("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get ServiceAccounts:", err)
 	}
 	return sa.Items
 }
 
+// GetEvents : accepts a clientset and returns a list of Events
 func GetEvents(clientset *kubernetes.Clientset) []v1.Event {
 	ev, err := clientset.CoreV1().Events("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get Events:", err)
 	}
 	return ev.Items
 }
 
+// GetEndpoints : accepts a clientset and returns a list of Endpoints
 func GetEndpoints(clientset *kubernetes.Clientset) []v1.Endpoints {
 	ep, err := clientset.CoreV1().Endpoints("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get Endpoints:", err)
 	}
 	return ep.Items
 }
 
+// GetPersistentVolumes : accepts a clientset and returns a list of PersistentVolumes
 func GetPersistentVolumes(clientset *kubernetes.Clientset) []v1.PersistentVolume {
 	pvs, err := clientset.CoreV1().PersistentVolumes().List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get PersistentVolumes:", err)
 	}
 	return pvs.Items
 }
 
+// GetPersistentVolumeClaims : accepts a clientset and returns a list of PersistentVolumeClaims
 func GetPersistentVolumeClaims(clientset *kubernetes.Clientset) []v1.PersistentVolumeClaim {
 	pvcs, err := clientset.CoreV1().PersistentVolumeClaims("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get PersistentVolumeClaims:", err)
 	}
 	return pvcs.Items
 }
 
+// GetRoles : accepts a clientset and returns a list of Roles
 func GetRoles(clientset *kubernetes.Clientset) []rbacv1.Role {
 	roles, err := clientset.RbacV1().Roles("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get Roles:", err)
 	}
 	return roles.Items
 }
 
+// GetRoleBindings : accepts a clientset and returns a list of RoleBindings
 func GetRoleBindings(clientset *kubernetes.Clientset) []rbacv1.RoleBinding {
 	rb, err := clientset.RbacV1().RoleBindings("").List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get RoleBindings:", err)
 	}
 	return rb.Items
 }
 
+// GetClusterRoles : accepts a clientset and returns a list of ClusterRoles
 func GetClusterRoles(clientset *kubernetes.Clientset) []rbacv1.ClusterRole {
 	cr, err := clientset.RbacV1().ClusterRoles().List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get ClusterRoles:", err)
 	}
 	return cr.Items
 }
 
+// GetClusterRoleBindings : accepts a clientset and returns a list of ClusterRoleBindings
 func GetClusterRoleBindings(clientset *kubernetes.Clientset) []rbacv1.ClusterRoleBinding {
 	crb, err := clientset.RbacV1().ClusterRoleBindings().List(metav1.ListOptions{})
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get ClusterRoleBindings:", err)
 	}
 	return crb.Items
 }
 
+// GetServerVersion : accepts a clientset and returns a list of ServerVersion
 func GetServerVersion(clientset *kubernetes.Clientset) string {
 	version, err := clientset.ServerVersion()
 	if err != nil {
-		log.Fatalln("failed to get services:", err)
+		log.Fatalln("Failed to get ServerVersion:", err)
 	}
 	return version.String()
 }
 
 // Exec
 
+// ExecIntoPod : accepts a clientset, a pod, a command and a standard redader
+//				 executes the specified command into the specified pod
 func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, stdin io.Reader) (string, string, error) {
 	req := clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
@@ -229,6 +290,12 @@ func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, s
 
 }
 
+// func getNetworkExecutable(pod v1.Pod) NetworkExecutable{
+
+// }
+
+// TestConnectionPodToService : accepts a pod and a service
+//				 executes the specified command into the specified pod to test connection to the specified service
 func TestConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
 
 	clientset := GetClientSet()
@@ -253,93 +320,3 @@ func TestConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
 
 	return result
 }
-
-// func main() {
-// 	var cs = GetClientSet()
-// 	var p = GetPods(cs)
-// 	var d = GetDeployments(cs)
-// 	var rs = GetReplicaSets(cs)
-// 	var ds = GetDaemonSets(cs)
-// 	var sts = GetStatefulSets(cs)
-// 	var s = GetServices(cs)
-// 	var scr = GetSecrets(cs)
-// 	var cm = GetConfigMaps(cs)
-// 	var sa = GetServiceAccounts(cs)
-// 	var ev = GetEvents(cs)
-// 	var ep = GetEndpoints(cs)
-// 	var pv = GetPersistentVolumes(cs)
-// 	var pvc = GetPersistentVolumeClaims(cs)
-// 	var r = GetRoles(cs)
-// 	var rb = GetRoleBindings(cs)
-// 	var cr = GetClusterRoles(cs)
-// 	var crb = GetClusterRoleBindings(cs)
-// 	var version = GetServerVersion(cs)
-
-// 	if len(p) > 0 {
-// 		fmt.Println("pod: " + p[0].Name)
-// 	}
-// 	if len(d) > 0 {
-// 		fmt.Println("deploy: " + d[0].Name)
-// 	}
-// 	if len(ds) > 0 {
-// 		fmt.Println("ds: " + ds[0].Name)
-// 	}
-// 	if len(rs) > 0 {
-// 		fmt.Println("rs: " + rs[0].Name)
-// 	}
-// 	if len(sts) > 0 {
-// 		fmt.Println("sts: " + sts[0].Name)
-// 	}
-// 	if len(sts) > 0 {
-// 		fmt.Println("sts: " + sts[0].Name)
-// 	}
-// 	if len(scr) > 0 {
-// 		fmt.Println("scr: " + scr[0].Name)
-// 	}
-// 	if len(cm) > 0 {
-// 		fmt.Println("cm: " + cm[0].Name)
-// 	}
-// 	if len(sa) > 0 {
-// 		fmt.Println("sa: " + sa[0].Name)
-// 	}
-// 	if len(ev) > 0 {
-// 		fmt.Println("ev: " + ev[0].Name)
-// 	}
-// 	if len(ep) > 0 {
-// 		fmt.Println("ep: " + ep[0].Name)
-// 	}
-// 	if len(s) > 0 {
-// 		fmt.Println("s: " + s[0].Name)
-// 	}
-// 	if len(pv) > 0 {
-// 		fmt.Println("pv: " + pv[0].Name)
-// 	}
-// 	if len(pvc) > 0 {
-// 		fmt.Println("pvc: " + pvc[0].Name)
-// 	}
-// 	if len(r) > 0 {
-// 		fmt.Println("r: " + r[0].Name)
-// 	}
-// 	if len(rb) > 0 {
-// 		fmt.Println("rb: " + rb[0].Name)
-// 	}
-// 	if len(cr) > 0 {
-// 		fmt.Println("cr: " + cr[0].Name)
-// 	}
-// 	if len(crb) > 0 {
-// 		fmt.Println("crb: " + crb[0].Name)
-// 	}
-// 	fmt.Println("version: " + version)
-
-// 	command := "whoami"
-// 	output, stderr, err := execIntoPod(cs, &p[0], command, nil)
-// 	if len(stderr) != 0 {
-// 		fmt.Println("STDERR:", stderr)
-// 	}
-// 	if err != nil {
-// 		fmt.Printf("Error occured while `exec`ing to the Pod %q, namespace %q, command %q. Error: %+v\n", &p[0].Name, &p[0].Namespace, command, err)
-// 	} else {
-// 		fmt.Println("Output:")
-// 		fmt.Println(output)
-// 	}
-// }

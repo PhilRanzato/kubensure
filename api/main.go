@@ -9,13 +9,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
-}
-
 func newRouter() *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/api/hello", handler).Methods("GET")
 	r.HandleFunc("/api/pods", api.PodHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/services", api.ServiceHandler).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/pod-exec", api.PodExecHandler).Methods("POST")
