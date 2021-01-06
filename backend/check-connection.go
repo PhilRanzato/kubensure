@@ -19,8 +19,8 @@ type networkExecutable struct {
 
 var networkExecutables = []networkExecutable{
 	networkExecutable{
-		command:  "wget --spider --timeout=1",
-		args:     "",
+		command:  "wget",
+		args:     " --spider --timeout=1",
 		needPort: false,
 	},
 	networkExecutable{
@@ -29,8 +29,8 @@ var networkExecutables = []networkExecutable{
 		needPort: false,
 	},
 	networkExecutable{
-		command:  "curl -O",
-		args:     "",
+		command:  "curl",
+		args:     " -O",
 		needPort: false,
 	},
 	networkExecutable{
@@ -119,9 +119,8 @@ func getNetworkExecutable(pod v1.Pod) (networkExecutable, bool) {
 		if len(stderr) != 0 {
 			fmt.Println("STDERR:", stderr)
 		}
-		if err != nil {
-			fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, command)
-			fmt.Println(err)
+		if err.Error() != "error in Stream: command terminated with exit code 1" {
+			fmt.Printf("Executable %s not find in path (%s)", ne.command, err)
 		} else {
 			fmt.Println("Output:")
 			fmt.Println(output)
@@ -149,11 +148,8 @@ func buildNetworkCommand(ne networkExecutable, svc v1.Service) string {
 
 // TestConnectionPodToService : accepts a pod and a service
 //				 executes the specified command into the specified pod to test connection to the specified service
-func TestConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
+func TestConnectionPodToService(clientset *kubernetes.Clientset, pod v1.Pod, svc v1.Service) bool {
 
-	clientset := GetClientSet()
-
-	// execute command
 	var result bool
 	executable, present := getNetworkExecutable(pod)
 	if present {

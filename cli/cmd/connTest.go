@@ -18,10 +18,12 @@ package cmd
 import (
 	"fmt"
 
+	backend "github.com/PhilRanzato/kubensure/backend"
 	"github.com/spf13/cobra"
 )
 
 var podNs string
+var svcNs string
 
 // connTestCmd represents the connTest command
 var connTestCmd = &cobra.Command{
@@ -30,7 +32,15 @@ var connTestCmd = &cobra.Command{
 	Long: `
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("connTest called")
+		cs := backend.GetClientSet()
+		// Test correctness of config
+		// fmt.Println(backend.GetServerVersion(cs))
+		pod := backend.GetPodByName(backend.GetPods(cs), args[0], podNs)
+		svc := backend.GetServiceByName(backend.GetServices(cs), args[1], svcNs)
+		if backend.TestConnectionPodToService(cs, pod, svc) {
+			fmt.Println("connection succeded")
+		}
+
 	},
 }
 
@@ -48,4 +58,5 @@ func init() {
 	// connTestCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	connTestCmd.Flags().StringVarP(&podNs, "pod-ns", "n", "default", "Pod namespace")
+	connTestCmd.Flags().StringVarP(&svcNs, "svc-ns", "s", "default", "Service namespace")
 }

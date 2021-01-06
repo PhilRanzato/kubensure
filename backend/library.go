@@ -105,6 +105,18 @@ func GetServices(clientset *kubernetes.Clientset) []v1.Service {
 	return svcs.Items
 }
 
+// GetServiceByName : accepts a list of services and a service name+namespace
+//			returns a Service
+func GetServiceByName(svcs []v1.Service, svcName string, svcNamespace string) v1.Service {
+	var svc v1.Service
+	for _, s := range svcs {
+		if s.Name == svcName && s.Namespace == svcNamespace {
+			svc = s
+		}
+	}
+	return svc
+}
+
 // GetSecrets : accepts a clientset and returns a list of Secrets
 func GetSecrets(clientset *kubernetes.Clientset) []v1.Secret {
 	scr, err := clientset.CoreV1().Secrets("").List(metav1.ListOptions{})
