@@ -19,8 +19,8 @@ type networkExecutable struct {
 
 var networkExecutables = []networkExecutable{
 	networkExecutable{
-		command:  "wget",
-		args:     "--spider --timeout=1",
+		command:  "wget --spider --timeout=1",
+		args:     "",
 		needPort: false,
 	},
 	networkExecutable{
@@ -29,8 +29,8 @@ var networkExecutables = []networkExecutable{
 		needPort: false,
 	},
 	networkExecutable{
-		command:  "curl",
-		args:     "-O",
+		command:  "curl -O",
+		args:     "",
 		needPort: false,
 	},
 	networkExecutable{
@@ -107,7 +107,7 @@ func getNetworkExecutable(pod v1.Pod) (networkExecutable, bool) {
 	var command string
 	var result networkExecutable
 
-	for idx, ne := range networkExecutables {
+	for _, ne := range networkExecutables {
 		if ne.needPort {
 			command = ne.command
 		} else {
@@ -120,7 +120,7 @@ func getNetworkExecutable(pod v1.Pod) (networkExecutable, bool) {
 			fmt.Println("STDERR:", stderr)
 		}
 		if err != nil {
-			fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s (executable %s)\n", pod.Name, pod.Namespace, command, networkExecutables[idx].command)
+			fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, command)
 			fmt.Println(err)
 		} else {
 			fmt.Println("Output:")
@@ -136,6 +136,17 @@ func getNetworkExecutable(pod v1.Pod) (networkExecutable, bool) {
 	return result, true
 }
 
+func buildNetworkCommand(ne networkExecutable, svc v1.Service) string {
+
+	command := ne.command + " " + svc.Name + "." + svc.Namespace
+
+	// if ne.needPort {
+	// 	command = command + " " + ne.args + " " + string(svc.Spec.Ports[0])
+	// }
+
+	return command
+}
+
 // TestConnectionPodToService : accepts a pod and a service
 //				 executes the specified command into the specified pod to test connection to the specified service
 func TestConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
@@ -144,20 +155,25 @@ func TestConnectionPodToService(pod v1.Pod, svc v1.Service) bool {
 
 	// execute command
 	var result bool
-	command := "wget --spider --timeout=1 " + svc.Name + "." + svc.Namespace
-	output, stderr, err := ExecIntoPod(clientset, &pod, command, nil)
-	if len(stderr) != 0 {
-		fmt.Println("STDERR:", stderr)
-		result = false
-	}
-	if err != nil {
-		fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, command)
-		fmt.Println(err)
-		result = false
+	executable, present := getNetworkExecutable(pod)
+	if present {
+		command := buildNetworkCommand(executable, svc)
+		output, stderr, err := ExecIntoPod(clientset, &pod, command, nil)
+		if len(stderr) != 0 {
+			fmt.Println("STDERR:", stderr)
+			result = false
+		}
+		if err != nil {
+			fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, command)
+			fmt.Println(err)
+			result = false
+		} else {
+			fmt.Println("Output:")
+			fmt.Println(output)
+			result = true
+		}
 	} else {
-		fmt.Println("Output:")
-		fmt.Println(output)
-		result = true
+		result = false
 	}
 
 	return result

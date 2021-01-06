@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
+Copyright © 2021 Phil Ranzato philranzato@gmail.com
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,16 +21,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var podNs string
+
 // connTestCmd represents the connTest command
 var connTestCmd = &cobra.Command{
 	Use:   "conn-test",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Check connection from a pod to a service",
+	Long: `
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("connTest called")
 	},
@@ -48,4 +46,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// connTestCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	connTestCmd.Flags().StringVarP(&podNs, "pod-ns", "n", "default", "Pod namespace")
 }
