@@ -24,6 +24,7 @@ import (
 
 var podNs string
 var svcNs string
+var svcPort string
 
 // connTestCmd represents the connTest command
 var connTestCmd = &cobra.Command{
@@ -32,15 +33,16 @@ var connTestCmd = &cobra.Command{
 	Long: `
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		cs := backend.GetClientSet()
-		// Test correctness of config
-		// fmt.Println(backend.GetServerVersion(cs))
-		pod := backend.GetPodByName(backend.GetPods(cs), args[0], podNs)
-		svc := backend.GetServiceByName(backend.GetServices(cs), args[1], svcNs)
-		if backend.TestConnectionPodToService(cs, pod, svc) {
-			fmt.Println("connection succeded")
+		if len(args) > 0 {
+			cs := backend.GetClientSet()
+			// Test correctness of config
+			// fmt.Println(backend.GetServerVersion(cs))
+			pod := backend.GetPodByName(backend.GetPods(cs), args[0], podNs)
+			svc := backend.GetServiceByName(backend.GetServices(cs), args[1], svcNs)
+			if backend.TestConnectionPodToService(cs, pod, svc, svcPort) {
+				fmt.Println("connection succeded")
+			}
 		}
-
 	},
 }
 
@@ -59,4 +61,5 @@ func init() {
 
 	connTestCmd.Flags().StringVarP(&podNs, "pod-ns", "n", "default", "Pod namespace")
 	connTestCmd.Flags().StringVarP(&svcNs, "svc-ns", "s", "default", "Service namespace")
+	connTestCmd.Flags().StringVarP(&svcPort, "svc-port", "p", "80", "Service port")
 }

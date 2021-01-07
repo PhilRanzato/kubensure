@@ -34,13 +34,8 @@ var networkExecutables = []networkExecutable{
 		needPort: false,
 	},
 	networkExecutable{
-		command:  "nc",
-		args:     "",
-		needPort: true,
-	},
-	networkExecutable{
-		command:  "telnet",
-		args:     "",
+		command:  "netcat",
+		args:     "-q 0",
 		needPort: true,
 	},
 	networkExecutable{
@@ -48,20 +43,16 @@ var networkExecutables = []networkExecutable{
 		args:     "-p",
 		needPort: true,
 	},
-	networkExecutable{
-		command:  "ping",
-		args:     "",
-		needPort: false,
-	},
-	networkExecutable{
-		command: "dig",
-		args:    "",
-	},
+	// networkExecutable{
+	// 	command:  "dig",
+	// 	args:     "",
+	// 	needPort: false,
+	// },
 }
 
 // ExecIntoPod : accepts a clientset, a pod, a command and a standard redader
 //				 executes the specified command into the specified pod
-func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, stdin io.Reader) (string, string, error) {
+func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, stdin io.Reader, testExecutable bool) (string, string, error) {
 	req := clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(pod.Name).
@@ -73,13 +64,28 @@ func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, s
 	}
 
 	parameterCodec := runtime.NewParameterCodec(scheme)
-	req.VersionedParams(&v1.PodExecOptions{
-		Command: strings.Fields(command),
-		Stdin:   stdin != nil,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     false,
-	}, parameterCodec)
+	if testExecutable == true {
+		req.VersionedParams(&v1.PodExecOptions{
+			Command: strings.Fields(command),
+			Stdin:   stdin != nil,
+			Stdout:  true,
+			Stderr:  true,
+			TTY:     false,
+		}, parameterCodec)
+	} else {
+		req.VersionedParams(&v1.PodExecOptions{
+			Command: []string{
+				"sh",
+				"-c",
+				command + " &> /dev/null && echo $?",
+			},
+			Stdin:  stdin != nil,
+			Stdout: true,
+			Stderr: true,
+			TTY:    false,
+		}, parameterCodec)
+
+	}
 
 	exec, err := remotecommand.NewSPDYExecutor(GetConfig(), "POST", req.URL())
 	if err != nil {
@@ -108,22 +114,16 @@ func getNetworkExecutable(pod v1.Pod) (networkExecutable, bool) {
 	var result networkExecutable
 
 	for _, ne := range networkExecutables {
-		if ne.needPort {
-			command = ne.command
-		} else {
-			command = ne.command
-		}
 
-		output, stderr, err := ExecIntoPod(clientset, &pod, command, nil)
+		command = ne.command
+		_, stderr, err := ExecIntoPod(clientset, &pod, command, nil, true)
 
 		if len(stderr) != 0 {
 			fmt.Println("STDERR:", stderr)
 		}
-		if err.Error() != "error in Stream: command terminated with exit code 1" {
-			fmt.Printf("Executable %s not find in path (%s)", ne.command, err)
+		if err != nil && err.Error() != "error in Stream: command terminated with exit code 1" {
+			fmt.Printf("Executable %s not find in path (%s)\n", ne.command, err)
 		} else {
-			fmt.Println("Output:")
-			fmt.Println(output)
 			result = ne
 		}
 	}
@@ -135,26 +135,39 @@ func getNetworkExecutable(pod v1.Pod) (networkExecutable, bool) {
 	return result, true
 }
 
-func buildNetworkCommand(ne networkExecutable, svc v1.Service) string {
+func buildNetworkCommand(ne networkExecutable, svc v1.Service, svcPort string) string {
 
-	command := ne.command + " " + svc.Name + "." + svc.Namespace
+	command := ""
+	args := ""
 
-	// if ne.needPort {
-	// 	command = command + " " + ne.args + " " + string(svc.Spec.Ports[0])
-	// }
+	if len(ne.args) > 0 {
+		args = " " + ne.args
+	}
+	if svc.Name != "" {
+		if ne.needPort && svcPort != "" {
+			command = ne.command + args + " " + svc.Name + "." + svc.Namespace + " " + svcPort
+			// command = ne.command + args + " " + svc.Name + "." + svc.Namespace + " " + svcPort
+		} else {
+			command = ne.command + args + " " + svc.Name + "." + svc.Namespace
+			// command = ne.command + args + " " + svc.Name + "." + svc.Namespace
+		}
+	} else {
+		command = "exit 1"
+	}
 
 	return command
 }
 
 // TestConnectionPodToService : accepts a pod and a service
 //				 executes the specified command into the specified pod to test connection to the specified service
-func TestConnectionPodToService(clientset *kubernetes.Clientset, pod v1.Pod, svc v1.Service) bool {
+func TestConnectionPodToService(clientset *kubernetes.Clientset, pod v1.Pod, svc v1.Service, svcPort string) bool {
 
 	var result bool
 	executable, present := getNetworkExecutable(pod)
 	if present {
-		command := buildNetworkCommand(executable, svc)
-		output, stderr, err := ExecIntoPod(clientset, &pod, command, nil)
+		command := buildNetworkCommand(executable, svc, svcPort)
+		fmt.Printf("Testing with %s\n", command)
+		output, stderr, err := ExecIntoPod(clientset, &pod, command, nil, false)
 		if len(stderr) != 0 {
 			fmt.Println("STDERR:", stderr)
 			result = false
