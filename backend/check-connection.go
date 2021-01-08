@@ -20,14 +20,15 @@ type networkExecutable struct {
 var networkExecutables = []networkExecutable{
 	networkExecutable{
 		command:  "wget",
-		args:     " --spider --timeout=1",
+		args:     "--spider --timeout=1",
 		needPort: false,
 	},
-	networkExecutable{
-		command:  "nslookup",
-		args:     "",
-		needPort: false,
-	},
+	// DNS resolution works always even with netpol if you enable communication with the dns. No point to add it here.
+	// networkExecutable{
+	// 	command:  "nslookup",
+	// 	args:     "",
+	// 	needPort: false,
+	// },
 	networkExecutable{
 		command:  "curl",
 		args:     " -O",

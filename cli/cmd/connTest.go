@@ -40,7 +40,9 @@ var connTestCmd = &cobra.Command{
 			pod := backend.GetPodByName(backend.GetPods(cs), args[0], podNs)
 			svc := backend.GetServiceByName(backend.GetServices(cs), args[1], svcNs)
 			if backend.TestConnectionPodToService(cs, pod, svc, svcPort) {
-				fmt.Println("connection succeded")
+				fmt.Printf("Connection succeded")
+			} else {
+				fmt.Printf("Cannot Connect to %s", args[1])
 			}
 		}
 	},
