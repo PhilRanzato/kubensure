@@ -3,7 +3,7 @@ name: Go
 on:
   push:
     branches:
-    - feature-GH5-CICD
+    - feature-GH8-ConnectionTest
   pull_request:
     branches: 
     - master
@@ -13,17 +13,32 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}
+      GO111MODULE: off
+    defaults:
+      run:
+        working-directory: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
     steps:
-    - uses: actions/checkout@v2
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
 
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
         go-version: 1.15
 
+    - name: Install dep
+      run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
+    - name: Install dependencies
+      run: dep ensure
+
     - name: Build Cli
-      run: cd cli && go build -v ./...
+      run: cd cli && go build -o ${{ env.GOROOT }}/bin/kubensure -v
 
-    - name: Build API
-      run: cd ../api && go build -v ./...
-
+    - name: Test cli
+      run: kubensure
