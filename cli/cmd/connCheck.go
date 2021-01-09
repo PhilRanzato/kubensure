@@ -24,10 +24,10 @@ import (
 
 var podNs string
 var svcNs string
-var svcPort string
+var svcPort int
 
-// connTestCmd represents the connTest command
-var connTestCmd = &cobra.Command{
+// connCheckCmd represents the connCheck command
+var connCheckCmd = &cobra.Command{
 	Use:   "conn-test",
 	Short: "Check connection from a pod to a service",
 	Long: `
@@ -35,8 +35,6 @@ var connTestCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			cs := backend.GetClientSet()
-			// Test correctness of config
-			// fmt.Println(backend.GetServerVersion(cs))
 			pod := backend.GetPodByName(backend.GetPods(cs), args[0], podNs)
 			svc := backend.GetServiceByName(backend.GetServices(cs), args[1], svcNs)
 			if backend.TestConnectionPodToService(cs, pod, svc, svcPort) {
@@ -49,19 +47,9 @@ var connTestCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(connTestCmd)
+	rootCmd.AddCommand(connCheckCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// connTestCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// connTestCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	connTestCmd.Flags().StringVarP(&podNs, "pod-ns", "n", "default", "Pod namespace")
-	connTestCmd.Flags().StringVarP(&svcNs, "svc-ns", "s", "default", "Service namespace")
-	connTestCmd.Flags().StringVarP(&svcPort, "svc-port", "p", "80", "Service port")
+	connCheckCmd.Flags().StringVarP(&podNs, "pod-ns", "n", "default", "Pod namespace")
+	connCheckCmd.Flags().StringVarP(&svcNs, "svc-ns", "s", "default", "Service namespace")
+	connCheckCmd.Flags().IntVarP(&svcPort, "svc-port", "p", 0, "Service port")
 }

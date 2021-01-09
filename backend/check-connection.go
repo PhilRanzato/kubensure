@@ -12,48 +12,58 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-type networkExecutable struct {
-	command, args string
-	needPort      bool
+type networkCommandStructure struct {
+	command       string
+	portMandatory bool
 }
 
-var networkExecutables = []networkExecutable{
-	networkExecutable{
-		command:  "wget",
-		args:     "--spider --timeout=1",
-		needPort: false,
-	},
-	// DNS resolution works always even with netpol if you enable communication with the dns. No point to add it here.
-	// networkExecutable{
-	// 	command:  "nslookup",
-	// 	args:     "",
-	// 	needPort: false,
-	// },
-	networkExecutable{
-		command:  "curl",
-		args:     " -O",
-		needPort: false,
-	},
-	networkExecutable{
-		command:  "netcat",
-		args:     "-q 0",
-		needPort: true,
-	},
-	networkExecutable{
-		command:  "nmap",
-		args:     "-p",
-		needPort: true,
-	},
-	// networkExecutable{
-	// 	command:  "dig",
-	// 	args:     "",
-	// 	needPort: false,
-	// },
+type networkCommand struct {
+	command string
+}
+
+var networkCommandConstructorList = []networkCommandStructure{
+	networkCommandStructure{"wget --spider -q --timeout=1 %s", false},
+	networkCommandStructure{"curl -O %s", false},
+	networkCommandStructure{"nmap -p %s %d", true},
+	networkCommandStructure{"nc -z -v -w 2 %s %d", true},
+	networkCommandStructure{"echo -n | telnet %s %d", true},
+}
+
+func networkCommandConstructor(ncs networkCommandStructure, svc v1.Service, port int) networkCommand {
+
+	var nc networkCommand
+
+	if ncs.portMandatory && port != 0 {
+		nc = networkCommand{
+			command: fmt.Sprintf(ncs.command, svc.Name+"."+svc.Namespace, port),
+		}
+	} else if ncs.portMandatory && port == 0 {
+	} else if port != 0 {
+		nc = networkCommand{
+			command: fmt.Sprintf(ncs.command+":%d", svc.Name+"."+svc.Namespace, port),
+		}
+	} else {
+		nc = networkCommand{
+			command: fmt.Sprintf(ncs.command, svc.Name+"."+svc.Namespace),
+		}
+	}
+
+	return nc
+
+}
+
+func networkCommandList(svc v1.Service, port int) []networkCommand {
+	var ncl []networkCommand
+
+	for _, t := range networkCommandConstructorList {
+		ncl = append(ncl, networkCommandConstructor(t, svc, port))
+	}
+	return ncl
 }
 
 // ExecIntoPod : accepts a clientset, a pod, a command and a standard redader
 //				 executes the specified command into the specified pod
-func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, stdin io.Reader, testExecutable bool) (string, string, error) {
+func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, stdin io.Reader, getOnlyResultCode bool) (string, string, error) {
 	req := clientset.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(pod.Name).
@@ -65,7 +75,7 @@ func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, s
 	}
 
 	parameterCodec := runtime.NewParameterCodec(scheme)
-	if testExecutable == true {
+	if getOnlyResultCode == false {
 		req.VersionedParams(&v1.PodExecOptions{
 			Command: strings.Fields(command),
 			Stdin:   stdin != nil,
@@ -108,83 +118,29 @@ func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, s
 
 }
 
-func getNetworkExecutable(pod v1.Pod) (networkExecutable, bool) {
-
-	clientset := GetClientSet()
-	var command string
-	var result networkExecutable
-
-	for _, ne := range networkExecutables {
-
-		command = ne.command
-		_, stderr, err := ExecIntoPod(clientset, &pod, command, nil, true)
-
-		if len(stderr) != 0 {
-			fmt.Println("STDERR:", stderr)
-		}
-		if err != nil && err.Error() != "error in Stream: command terminated with exit code 1" {
-			fmt.Printf("Executable %s not find in path (%s)\n", ne.command, err)
-		} else {
-			result = ne
-		}
-	}
-
-	if result == (networkExecutable{}) {
-		return result, false
-	}
-
-	return result, true
-}
-
-func buildNetworkCommand(ne networkExecutable, svc v1.Service, svcPort string) string {
-
-	command := ""
-	args := ""
-
-	if len(ne.args) > 0 {
-		args = " " + ne.args
-	}
-	if svc.Name != "" {
-		if ne.needPort && svcPort != "" {
-			command = ne.command + args + " " + svc.Name + "." + svc.Namespace + " " + svcPort
-			// command = ne.command + args + " " + svc.Name + "." + svc.Namespace + " " + svcPort
-		} else {
-			command = ne.command + args + " " + svc.Name + "." + svc.Namespace
-			// command = ne.command + args + " " + svc.Name + "." + svc.Namespace
-		}
-	} else {
-		command = "exit 1"
-	}
-
-	return command
-}
-
 // TestConnectionPodToService : accepts a pod and a service
 //				 executes the specified command into the specified pod to test connection to the specified service
-func TestConnectionPodToService(clientset *kubernetes.Clientset, pod v1.Pod, svc v1.Service, svcPort string) bool {
+func TestConnectionPodToService(clientset *kubernetes.Clientset, pod v1.Pod, svc v1.Service, svcPort int) bool {
 
-	var result bool
-	executable, present := getNetworkExecutable(pod)
-	if present {
-		command := buildNetworkCommand(executable, svc, svcPort)
-		fmt.Printf("Testing with %s\n", command)
-		output, stderr, err := ExecIntoPod(clientset, &pod, command, nil, false)
-		if len(stderr) != 0 {
-			fmt.Println("STDERR:", stderr)
-			result = false
+	var result = false
+	commands := networkCommandList(svc, svcPort)
+	for _, nc := range commands {
+		if nc.command != "" {
+			fmt.Printf("Testing with %s\n", nc.command)
+			_, stderr, err := ExecIntoPod(clientset, &pod, nc.command, nil, true)
+			if len(stderr) != 0 {
+				// fmt.Println("STDERR:", stderr)
+			}
+			if err != nil {
+				// fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, nc.command)
+				// fmt.Println(err)
+			} else {
+				// fmt.Println("Output:")
+				// fmt.Println(output)
+				result = true
+				break
+			}
 		}
-		if err != nil {
-			fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, command)
-			fmt.Println(err)
-			result = false
-		} else {
-			fmt.Println("Output:")
-			fmt.Println(output)
-			result = true
-		}
-	} else {
-		result = false
 	}
-
 	return result
 }
