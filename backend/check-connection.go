@@ -29,22 +29,26 @@ var networkCommandConstructorList = []networkCommandStructure{
 	networkCommandStructure{"echo -n | telnet %s %d", true},
 }
 
-func networkCommandConstructor(ncs networkCommandStructure, svc v1.Service, port int) networkCommand {
+func networkCommandConstructor(ncs networkCommandStructure, ep string, epNs string, port int) networkCommand {
 
 	var nc networkCommand
 
+	if epNs != "" {
+		epNs = "." + epNs
+	}
+
 	if ncs.portMandatory && port != 0 {
 		nc = networkCommand{
-			command: fmt.Sprintf(ncs.command, svc.Name+"."+svc.Namespace, port),
+			command: fmt.Sprintf(ncs.command, ep+epNs, port),
 		}
 	} else if ncs.portMandatory && port == 0 {
 	} else if port != 0 {
 		nc = networkCommand{
-			command: fmt.Sprintf(ncs.command+":%d", svc.Name+"."+svc.Namespace, port),
+			command: fmt.Sprintf(ncs.command+":%d", ep+epNs, port),
 		}
 	} else {
 		nc = networkCommand{
-			command: fmt.Sprintf(ncs.command, svc.Name+"."+svc.Namespace),
+			command: fmt.Sprintf(ncs.command, ep+epNs),
 		}
 	}
 
@@ -52,11 +56,11 @@ func networkCommandConstructor(ncs networkCommandStructure, svc v1.Service, port
 
 }
 
-func networkCommandList(svc v1.Service, port int) []networkCommand {
+func networkCommandList(ep string, epNs string, port int) []networkCommand {
 	var ncl []networkCommand
 
 	for _, t := range networkCommandConstructorList {
-		ncl = append(ncl, networkCommandConstructor(t, svc, port))
+		ncl = append(ncl, networkCommandConstructor(t, ep, epNs, port))
 	}
 	return ncl
 }
@@ -118,12 +122,39 @@ func ExecIntoPod(clientset *kubernetes.Clientset, pod *v1.Pod, command string, s
 
 }
 
-// TestConnectionPodToService : accepts a pod and a service
+// ConnectionPodToService : accepts a pod and a service
 //				 executes the specified command into the specified pod to test connection to the specified service
-func TestConnectionPodToService(clientset *kubernetes.Clientset, pod v1.Pod, svc v1.Service, svcPort int) bool {
+func ConnectionPodToService(clientset *kubernetes.Clientset, pod v1.Pod, svc v1.Service, svcPort int) bool {
 
 	var result = false
-	commands := networkCommandList(svc, svcPort)
+	commands := networkCommandList(svc.Name, svc.Namespace, svcPort)
+	for _, nc := range commands {
+		if nc.command != "" {
+			fmt.Printf("Testing with %s\n", nc.command)
+			_, stderr, err := ExecIntoPod(clientset, &pod, nc.command, nil, true)
+			if len(stderr) != 0 {
+				// fmt.Println("STDERR:", stderr)
+			}
+			if err != nil {
+				// fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, nc.command)
+				// fmt.Println(err)
+			} else {
+				// fmt.Println("Output:")
+				// fmt.Println(output)
+				result = true
+				break
+			}
+		}
+	}
+	return result
+}
+
+// ConnectionPodToExternal : accepts a pod and an external endpoint
+//				 executes the specified command into the specified pod to test connection to the specified external endpoint
+func ConnectionPodToExternal(clientset *kubernetes.Clientset, pod v1.Pod, url string, urlPort int) bool {
+
+	var result = false
+	commands := networkCommandList(url, "", urlPort)
 	for _, nc := range commands {
 		if nc.command != "" {
 			fmt.Printf("Testing with %s\n", nc.command)
