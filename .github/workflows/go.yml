@@ -2,8 +2,6 @@ name: Go
 
 on:
   push:
-    branches:
-    - feature-GH8-ConnectionTest
   pull_request:
     branches: 
     - master

@@ -1,5 +1,7 @@
 # kubensure
 
+![Go Build](https://github.com/PhilRanzato/kubensure/workflows/Go/badge.svg)
+
 Ensure consistency in Kubernetes cluster's resources
 
 Additional commands cli-specific
