@@ -18,7 +18,7 @@ package cmd
 import (
 	"fmt"
 
-	backend "github.com/PhilRanzato/kubensure/backend"
+	"github.com/PhilRanzato/kubensure/backend"
 	"github.com/spf13/cobra"
 )
 
@@ -26,30 +26,41 @@ var podNs string
 var svcNs string
 var svcPort int
 
-// connCheckCmd represents the connCheck command
-var connCheckCmd = &cobra.Command{
-	Use:   "conn-test",
+// connectionCmd represents the connection command
+var connectionCmd = &cobra.Command{
+	Use:   "connection",
 	Short: "Check connection from a pod to a service",
 	Long: `
+Check connection from a pod to a service.
+
+Usage examples:
+
+  # Ensure pod 'example' of namespace 'test' can connect to service 'svc-example' in namespace 'svc-test'
+
+  kubensure connection example -n test svc-example -s svc-test
+
 `,
+	// Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			cs := backend.GetClientSet()
 			pod := backend.GetPodByName(backend.GetPods(cs), args[0], podNs)
 			svc := backend.GetServiceByName(backend.GetServices(cs), args[1], svcNs)
 			if backend.TestConnectionPodToService(cs, pod, svc, svcPort) {
-				fmt.Printf("Connection succeded")
+				fmt.Printf("Pod %s can connect to %s", args[0], args[1])
 			} else {
-				fmt.Printf("Cannot Connect to %s", args[1])
+				fmt.Printf("Pod %s cannot connect to %s", args[0], args[1])
 			}
+		} else {
+			fmt.Printf(`'kubensure connection ok' needs at least two arguments: <PodName> and <ServiceName>.
+See 'kubensure connection -h' for more information`)
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(connCheckCmd)
-
-	connCheckCmd.Flags().StringVarP(&podNs, "pod-ns", "n", "default", "Pod namespace")
-	connCheckCmd.Flags().StringVarP(&svcNs, "svc-ns", "s", "default", "Service namespace")
-	connCheckCmd.Flags().IntVarP(&svcPort, "svc-port", "p", 0, "Service port")
+	rootCmd.AddCommand(connectionCmd)
+	connectionCmd.Flags().StringVarP(&podNs, "pod-ns", "n", "default", "Pod namespace")
+	connectionCmd.Flags().StringVarP(&svcNs, "svc-ns", "s", "default", "Service namespace")
+	connectionCmd.Flags().IntVarP(&svcPort, "svc-port", "p", 0, "Service port")
 }

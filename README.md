@@ -15,4 +15,6 @@ go run main.go
 cobra add test
 go build -o $GOPATH/bin/kubensure.exe
 kubensure -h
+# add a new subcommand
+cobra add subcmd -p cmd
 ```
