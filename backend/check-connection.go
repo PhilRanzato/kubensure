@@ -22,8 +22,8 @@ type networkCommand struct {
 }
 
 var networkCommandConstructorList = []networkCommandStructure{
-	networkCommandStructure{"wget --spider -q --timeout=1 %s", false},
-	networkCommandStructure{"curl -O %s", false},
+	networkCommandStructure{"wget --spider -q --timeout=5 %s", false},
+	networkCommandStructure{"curl -s -k %s > /dev/null", false},
 	networkCommandStructure{"nmap -p %s %d", true},
 	networkCommandStructure{"nc -z -v -w 2 %s %d", true},
 	networkCommandStructure{"echo -n | telnet %s %d", true},
@@ -53,7 +53,6 @@ func networkCommandConstructor(ncs networkCommandStructure, ep string, epNs stri
 	}
 
 	return nc
-
 }
 
 func networkCommandList(ep string, epNs string, port int) []networkCommand {

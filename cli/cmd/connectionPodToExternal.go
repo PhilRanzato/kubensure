@@ -27,14 +27,22 @@ var extPortToExternal int
 
 // connectionPodToExternalCmd represents the connectionPodToExternal command
 var connectionPodToExternalCmd = &cobra.Command{
-	Use:   "pod-to-external",
+	Use:   "pod-to-ext",
 	Short: "Check connection from a pod to an external endpoint.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Long: `
+Check connection from a pod to an external endpoint.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage examples:
+
+  # Ensure pod 'example' of namespace 'test' can connect to https://kubernetes.io
+
+  kubensure connection pod-to-ext example -n test https://kubernetes.io
+
+  # Ensure pod 'example' of namespace 'test' can connect to http://192.168.100.112:90
+
+  kubensure connection pod-to-ext example -n test http://192.168.100.112 --ext-port 90
+
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			cs := backend.GetClientSet()
@@ -54,7 +62,7 @@ See 'kubensure connection pod-to-pod -h' for more information`)
 func init() {
 	connectionCmd.AddCommand(connectionPodToExternalCmd)
 	connectionPodToExternalCmd.Flags().StringVarP(&podNsToExternal, "pod-ns", "n", "default", "Pod namespace")
-	connectionPodToExternalCmd.Flags().IntVarP(&extPortToExternal, "ext-port", "p", 80, "External endpoint port")
+	connectionPodToExternalCmd.Flags().IntVarP(&extPortToExternal, "ext-port", "p", 443, "External endpoint port")
 	connectionPodToExternalCmd.SuggestionsMinimumDistance = 2
 
 }
