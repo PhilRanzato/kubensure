@@ -18,10 +18,14 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/PhilRanzato/kubensure/backend"
+
 	"github.com/spf13/cobra"
 )
 
 var podNsToPod string
+var targetNsToPod string
+var targetPortToPod int
 
 // connectionPodToPodCmd represents the connectionPodToPod command
 var connectionPodToPodCmd = &cobra.Command{
@@ -34,7 +38,19 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("connectionPodToPod called")
+		if len(args) > 0 {
+			cs := backend.GetClientSet()
+			pod := backend.GetPodByName(backend.GetPods(cs), args[0], podNsToPod)
+			trgt := backend.GetPodByName(backend.GetPods(cs), args[1], targetNsToPod)
+			if backend.ConnectionPodToPod(cs, pod, trgt, targetPortToPod) {
+				fmt.Printf("Pod %s can connect to %s", args[0], args[1])
+			} else {
+				fmt.Printf("Pod %s cannot connect to %s", args[0], args[1])
+			}
+		} else {
+			fmt.Printf(`'kubensure connection pod-to-pod' needs at least two arguments: <PodName> and <ServiceName>.
+		See 'kubensure connection pod-to-pod -h' for more information`)
+		}
 	},
 }
 
@@ -42,6 +58,8 @@ func init() {
 	connectionCmd.AddCommand(connectionPodToPodCmd)
 
 	connectionPodToPodCmd.Flags().StringVarP(&podNsToPod, "pod-ns", "n", "default", "Pod namespace")
+	connectionPodToPodCmd.Flags().StringVarP(&targetNsToPod, "target-ns", "t", "default", "Target Pod namespace")
+	connectionPodToPodCmd.Flags().IntVarP(&targetPortToPod, "target-port", "p", 0, "Target Pod port")
 	connectionPodToPodCmd.SuggestionsMinimumDistance = 2
 
 }

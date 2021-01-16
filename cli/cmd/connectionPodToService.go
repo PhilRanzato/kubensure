@@ -61,8 +61,8 @@ func init() {
 	connectionCmd.AddCommand(connectionPodToServiceCmd)
 
 	connectionPodToServiceCmd.Flags().StringVarP(&podNsToService, "pod-ns", "n", "default", "Pod namespace")
-	connectionPodToServiceCmd.Flags().StringVarP(&svcNsToService, "svc-ns", "s", "default", "Service namespace")
-	connectionPodToServiceCmd.Flags().IntVarP(&svcPortToService, "svc-port", "p", 0, "Service port")
+	connectionPodToServiceCmd.Flags().StringVarP(&svcNsToService, "svc-ns", "t", "default", "Target Service namespace")
+	connectionPodToServiceCmd.Flags().IntVarP(&svcPortToService, "svc-port", "p", 0, "Target Service port")
 	connectionPodToServiceCmd.SuggestionsMinimumDistance = 2
 
 }

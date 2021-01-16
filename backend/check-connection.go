@@ -23,7 +23,7 @@ type networkCommand struct {
 
 var networkCommandConstructorList = []networkCommandStructure{
 	networkCommandStructure{"wget --spider -q --timeout=5 %s", false},
-	networkCommandStructure{"curl -s -k %s > /dev/null", false},
+	networkCommandStructure{"curl -s -k %s", false},
 	networkCommandStructure{"nmap -p %s %d", true},
 	networkCommandStructure{"nc -z -v -w 2 %s %d", true},
 	networkCommandStructure{"echo -n | telnet %s %d", true},
@@ -154,6 +154,33 @@ func ConnectionPodToExternal(clientset *kubernetes.Clientset, pod v1.Pod, url st
 
 	var result = false
 	commands := networkCommandList(url, "", urlPort)
+	for _, nc := range commands {
+		if nc.command != "" {
+			fmt.Printf("Testing with %s\n", nc.command)
+			_, stderr, err := ExecIntoPod(clientset, &pod, nc.command, nil, true)
+			if len(stderr) != 0 {
+				// fmt.Println("STDERR:", stderr)
+			}
+			if err != nil {
+				// fmt.Printf("Error occured while `exec`ing to the Pod %s, namespace %s, command %s\n", pod.Name, pod.Namespace, nc.command)
+				// fmt.Println(err)
+			} else {
+				// fmt.Println("Output:")
+				// fmt.Println(output)
+				result = true
+				break
+			}
+		}
+	}
+	return result
+}
+
+// ConnectionPodToPod : accepts two pods
+//				 executes the specified command into the specified pod to test connection against the other pod
+func ConnectionPodToPod(clientset *kubernetes.Clientset, pod v1.Pod, target v1.Pod, targetPort int) bool {
+
+	var result = false
+	commands := networkCommandList(strings.ReplaceAll(GetPodIP(target), ".", "-"), target.Namespace+".pod", targetPort)
 	for _, nc := range commands {
 		if nc.command != "" {
 			fmt.Printf("Testing with %s\n", nc.command)
