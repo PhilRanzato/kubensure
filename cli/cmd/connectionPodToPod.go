@@ -31,12 +31,20 @@ var targetPortToPod int
 var connectionPodToPodCmd = &cobra.Command{
 	Use:   "pod-to-pod",
 	Short: "Check connection from a pod to another pod.",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Long: `
+Check connection from a pod to another pod.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage examples:
+
+  # Ensure pod 'example' of namespace 'test' can connect to pod 'target' in namespace 'pod-test'
+
+  kubensure connection pod-to-pod example -n test target -t pod-test
+
+  # Ensure pod 'example' of namespace 'test' can connect to pod 'target' in namespace 'pod-test' on port 8000
+
+  kubensure connection pod-to-pod example -n test target -t pod-test -p 8000
+
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) > 0 {
 			cs := backend.GetClientSet()
@@ -48,7 +56,7 @@ to quickly create a Cobra application.`,
 				fmt.Printf("Pod %s cannot connect to %s", args[0], args[1])
 			}
 		} else {
-			fmt.Printf(`'kubensure connection pod-to-pod' needs at least two arguments: <PodName> and <ServiceName>.
+			fmt.Printf(`'kubensure connection pod-to-pod' needs at least two arguments: <PodName> and <PodNamespace>.
 		See 'kubensure connection pod-to-pod -h' for more information`)
 		}
 	},
