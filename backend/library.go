@@ -51,6 +51,11 @@ func GetPodByName(pods []v1.Pod, podName string, podNamespace string) v1.Pod {
 	return pod
 }
 
+// GetPodIP : returns the pod ip
+func GetPodIP(pod v1.Pod) string {
+	return pod.Status.PodIP
+}
+
 // GetPods : accepts a clientset and returns a list of Pods
 func GetPods(clientset *kubernetes.Clientset) []v1.Pod {
 	pods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{})

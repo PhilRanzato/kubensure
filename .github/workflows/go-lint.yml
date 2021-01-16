@@ -1,4 +1,4 @@
-name: Go
+name: Lint
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
     - develop
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     env:
@@ -35,8 +34,8 @@ jobs:
     - name: Install dependencies
       run: dep ensure
 
-    - name: Build Cli
-      run: cd cli && go build -o ${{ env.GOROOT }}/bin/kubensure -v
+    - name: Install Linter
+      run: go get -u golang.org/x/lint/golint
 
-    - name: Test cli
-      run: kubensure
+    - name: Lint CLI
+      run: cd cli && golint cmd
