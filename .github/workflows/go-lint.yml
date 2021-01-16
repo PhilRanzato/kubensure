@@ -18,4 +18,4 @@ jobs:
         with:
           # Required: the version of golangci-lint is required and must be specified without patch version: we always use the latest patch version.
           version: v1.29
-          working-directory: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/cli
+          working-directory: ${{ github.repository }}/src/github.com/${{ github.repository }}/cli
