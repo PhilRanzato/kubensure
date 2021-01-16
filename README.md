@@ -1,6 +1,7 @@
 # kubensure
 
-![Go Build](https://github.com/PhilRanzato/kubensure/workflows/Go/badge.svg)
+![Build](https://github.com/PhilRanzato/kubensure/workflows/Go/badge.svg)
+![Lint](https://github.com/PhilRanzato/kubensure/workflows/GoLint/badge.svg)
 
 Ensure consistency in Kubernetes cluster's resources
 
