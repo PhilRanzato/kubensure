@@ -1,0 +1,41 @@
+name: Lint
+
+on:
+  push:
+  pull_request:
+    branches: 
+    - master
+    - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GOPATH: ${{ github.workspace }}
+      GO111MODULE: off
+    defaults:
+      run:
+        working-directory: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+
+    - name: Install dep
+      run: curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
+    - name: Install dependencies
+      run: dep ensure
+
+    - name: Install Linter
+      run: go get -u golang.org/x/lint/golint
+
+    - name: Lint CLI
+      run: cd cli && golint cmd
