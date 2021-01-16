@@ -34,5 +34,8 @@ jobs:
     - name: Install dependencies
       run: dep ensure
 
-    - name: Build Cli
+    - name: Install Linter
+      run: go get -u golang.org/x/lint/golint
+
+    - name: Lint CLI
       run: cd cli && golint cmd
