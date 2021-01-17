@@ -27,6 +27,7 @@ import (
 var podNsToPod string
 var targetNsToPod string
 var targetPortToPod int
+var bulkPod bool
 
 // connectionPodToPodCmd represents the connectionPodToPod command
 var connectionPodToPodCmd = &cobra.Command{
@@ -56,9 +57,25 @@ Usage examples:
 			} else {
 				fmt.Printf("Pod %s cannot connect to %s", args[0], args[1])
 			}
+		} else if bulkPod {
+			fmt.Println(`Bulk connection`)
+			cs := backend.GetClientSet()
+			pods := backend.GetPods(cs)
+			for _, p := range pods {
+				for _, target := range pods {
+					if p.Name != target.Name && p.Namespace != target.Namespace {
+						if backend.ConnectionPodToPod(cs, p, target, targetPortToPod) {
+							fmt.Printf("Pod %s (%s) can connect to %s (%s)\n", p.Name, p.Namespace, target.Name, target.Namespace)
+						} else {
+							fmt.Printf("Pod %s (%s) cannot connect to %s (%s)\n", p.Name, p.Namespace, target.Name, target.Namespace)
+						}
+					}
+				}
+			}
 		} else {
-			fmt.Printf(`'kubensure connection pod-to-pod' needs at least two arguments: <PodName> and <PodNamespace>.
-		See 'kubensure connection pod-to-pod -h' for more information`)
+			fmt.Printf(`
+'kubensure connection pod-to-pod' needs at least two arguments: <PodName> and <PodNamespace>.
+See 'kubensure connection pod-to-pod -h' for more information`)
 		}
 	},
 }
@@ -69,6 +86,7 @@ func init() {
 	connectionPodToPodCmd.Flags().StringVarP(&podNsToPod, "pod-ns", "n", "default", "Pod namespace")
 	connectionPodToPodCmd.Flags().StringVarP(&targetNsToPod, "target-ns", "t", "default", "Target Pod namespace")
 	connectionPodToPodCmd.Flags().IntVarP(&targetPortToPod, "target-port", "p", 0, "Target Pod port")
+	connectionPodToPodCmd.Flags().BoolVarP(&bulkPod, "bulk", "b", false, "Checks connection for all pods")
 	connectionPodToPodCmd.SuggestionsMinimumDistance = 2
 
 }

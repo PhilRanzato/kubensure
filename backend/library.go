@@ -39,6 +39,15 @@ func GetClientSet() *kubernetes.Clientset {
 	return clientset
 }
 
+// GetNamespaces : accepts a clientset and returns a list of Namespaces
+func GetNamespaces(clientset *kubernetes.Clientset) []v1.Namespace {
+	namespaces, err := clientset.CoreV1().Namespaces().List(metav1.ListOptions{})
+	if err != nil {
+		log.Fatalln("Failed to get Namespaces:", err)
+	}
+	return namespaces.Items
+}
+
 // GetPodByName : accepts a list of pods and a pod name+namespace
 //			returns a Pod
 func GetPodByName(pods []v1.Pod, podName string, podNamespace string) v1.Pod {
